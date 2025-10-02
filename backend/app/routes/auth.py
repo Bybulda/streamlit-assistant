@@ -1,10 +1,18 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+from backend.app.models.user import UserLogin, TokenResponse
+from backend.app.services.auth import create_access_token
 
 router = APIRouter()
 
-@router.post("/login")
-def login(username: str, password: str):
-    # TODO: добавить нормальную авторизацию
-    if username == "admin" and password == "123":
-        return {"token": "fake-jwt-token"}
-    return {"error": "invalid credentials"}
+
+fake_users = {
+    "admin": "123",
+    "user": "pass"
+}
+
+@router.post("/login", response_model=TokenResponse)
+def login(user: UserLogin):
+    if fake_users.get(user.username) == user.password:
+        token = create_access_token({"sub": user.username})
+        return {"access_token": token, "token_type": "bearer"}
+    raise HTTPException(status_code=401, detail="Invalid username or password")

@@ -2,3 +2,4 @@ fastapi
 uvicorn[standard]
 pydantic
 python-multipart  # для загрузки файлов
+python-jose[cryptography]
