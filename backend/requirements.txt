@@ -3,3 +3,8 @@ uvicorn[standard]
 pydantic
 python-multipart  # для загрузки файлов
 python-jose[cryptography]
+sqlalchemy
+alembic
+psycopg2-binary
+passlib[bcrypt]
+pytest
