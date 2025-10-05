@@ -7,7 +7,7 @@ from backend.app.repositories import user_repository
 from backend.app.core.database import get_db
 from backend.app.services.auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
-router = APIRouter(tags=["auth"])
+router = APIRouter()
 
 @router.post("/register")
 def register(username: str, password: str, db: Session = Depends(get_db)):
