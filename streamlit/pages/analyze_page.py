@@ -8,9 +8,9 @@ API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 st.title("🧠 Анализ документов")
 
-if "access_token" not in st.session_state:
+if "access_token" not in st.session_state or not st.session_state.access_token:
     st.warning("Пожалуйста, войдите в систему через главную страницу.")
-    st.stop()
+    st.switch_page("pages/auth_page.py")
 
 headers = {"Authorization": f"Bearer {st.session_state.access_token}"}
 
@@ -41,7 +41,6 @@ analysis_type = st.radio(
 user_question = None
 if analysis_type == "❓ Ответить на вопрос по документу":
     user_question = st.text_area("Введите ваш вопрос:")
-
 
 if st.button("🚀 Запустить анализ"):
     with st.spinner("Анализируем документ... ⏳"):

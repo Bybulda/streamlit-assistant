@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from backend.app.models.model import Document
 
-def create_document(db: Session, filename: str, path: str, owner_id: int) -> Document:
-    doc = Document(filename=filename, path=path, owner_id=owner_id)
+def create_document(db: Session, filename: str, content: bytes, owner_id: int) -> Document:
+    doc = Document(filename=filename, content=content, owner_id=owner_id)
     db.add(doc)
     db.commit()
     db.refresh(doc)

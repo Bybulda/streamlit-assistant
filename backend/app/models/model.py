@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, LargeBinary
 from sqlalchemy.orm import relationship
 from backend.app.core.database import Base
 
@@ -22,7 +22,7 @@ class Document(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     filename = Column(String(255), nullable=False)
-    path = Column(String(500), nullable=False)
+    content = Column(LargeBinary, nullable=False)
     uploaded_at = Column(DateTime, default=datetime.utcnow)
 
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
