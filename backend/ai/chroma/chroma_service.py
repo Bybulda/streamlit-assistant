@@ -5,6 +5,8 @@ import chromadb
 from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
 
+from token_chunker import preprocess_document_by_tokens
+
 CHROMA_HOST = os.getenv("CHROMA_HOST", "localhost")
 CHROMA_PORT = int(os.getenv("CHROMA_PORT", 8000))
 CHROMA_COLLECTION = os.getenv("CHROMA_COLLECTION", "documents")
@@ -26,15 +28,15 @@ def encode_texts(texts: List[str]) -> List[List[float]]:
     return embedder.encode(texts).tolist()
 
 
-def add_document(doc_id: str, content: str, metadata: Optional[Dict[str, Any]] = None):
-    collection = get_or_create_collection()
-    embedding = encode_texts([content])
-    collection.add(
-        ids=[doc_id],
-        documents=[content],
-        embeddings=embedding,
-        metadatas=[metadata or {}]
-    )
+# def add_document(doc_id: str, content: str, metadata: Optional[Dict[str, Any]] = None):
+#     collection = get_or_create_collection()
+#     embedding = encode_texts([content])
+#     collection.add(
+#         ids=[doc_id],
+#         documents=[content],
+#         embeddings=embedding,
+#         metadatas=[metadata or {}]
+#     )
 
 
 def get_document_by_id(doc_id: str) -> Optional[Dict[str, Any]]:
@@ -53,7 +55,6 @@ def get_document_by_id(doc_id: str) -> Optional[Dict[str, Any]]:
         "metadata": result["metadatas"][0],
         "embedding": result["embeddings"][0] if "embeddings" in result else {}
     }
-
 
 
 def document_exists(doc_id: str) -> bool:
@@ -83,3 +84,28 @@ def list_all_documents(limit: int = 100) -> List[Dict[str, Any]]:
 def reset_collection():
     client.delete_collection(CHROMA_COLLECTION)
     print(f"Collection '{CHROMA_COLLECTION}' was reset.")
+
+
+def add_full_document(
+        doc_id: str,
+        content: str,
+        metadata: Optional[Dict[str, Any]] = None,
+        model_name: str = "gpt-4"
+):
+    collection = get_or_create_collection()
+    processed_chunks = preprocess_document_by_tokens(content, model_name=model_name)
+
+    ids = [f"{doc_id}_{chunk['chunk_index']}" for chunk in processed_chunks]
+    documents = [chunk["content"] for chunk in processed_chunks]
+    metadatas = [
+        {**(metadata or {}), "chunk_index": chunk["chunk_index"]}
+        for chunk in processed_chunks
+    ]
+    embeddings = encode_texts(documents)
+
+    collection.add(
+        ids=ids,
+        documents=documents,
+        embeddings=embeddings,
+        metadatas=metadatas
+    )
