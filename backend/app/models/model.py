@@ -1,7 +1,10 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, LargeBinary
+
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, LargeBinary, Text
 from sqlalchemy.orm import relationship
+
 from backend.app.core.database import Base
+
 
 class User(Base):
     __tablename__ = "users"
@@ -28,5 +31,24 @@ class Document(Base):
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     owner = relationship("User", back_populates="documents")
 
+    messages = relationship("ChatMessage", back_populates="document", cascade="all, delete-orphan",
+                            passive_deletes=True)
+
     def __repr__(self):
         return f"<Document {self.filename}>"
+
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    document_id = Column(Integer, ForeignKey('documents.id', ondelete='CASCADE'), nullable=False, index=True)
+    role = Column(String, nullable=False)
+    message = Column(Text, nullable=False)
+    model = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    document = relationship("Document", back_populates="messages", passive_deletes=True)
+
+    def __repr__(self):
+        return f"<Chat message {self.message}>"

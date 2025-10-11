@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from backend.app.routes import auth, documents, chat
 
-app = FastAPI(title="AI Knowledge Assistant API")
+app = FastAPI(title="AI Knowledge Assistant API", debug=True)
 
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])

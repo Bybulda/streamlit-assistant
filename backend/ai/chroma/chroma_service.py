@@ -5,7 +5,7 @@ import chromadb
 from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
 
-from token_chunker import preprocess_document_by_tokens
+from backend.ai.chroma.token_chunker import preprocess_document_by_tokens
 
 CHROMA_HOST = os.getenv("CHROMA_HOST", "localhost")
 CHROMA_PORT = int(os.getenv("CHROMA_PORT", 8000))
@@ -28,15 +28,29 @@ def encode_texts(texts: List[str]) -> List[List[float]]:
     return embedder.encode(texts).tolist()
 
 
-# def add_document(doc_id: str, content: str, metadata: Optional[Dict[str, Any]] = None):
-#     collection = get_or_create_collection()
-#     embedding = encode_texts([content])
-#     collection.add(
-#         ids=[doc_id],
-#         documents=[content],
-#         embeddings=embedding,
-#         metadatas=[metadata or {}]
-#     )
+def search_similar_chunks(query: str, top_k: int = 5, doc_id: Optional[str] = None):
+    collection = get_or_create_collection()
+    query_embedding = encode_texts([query])
+
+    where_clause = {"document_id": doc_id} if doc_id else None
+
+    results = collection.query(
+        query_embeddings=query_embedding,
+        n_results=top_k,
+        where=where_clause
+    )
+
+    if not results["ids"] or not results["ids"][0]:
+        return []
+
+    chunks = []
+    for i in range(len(results["ids"][0])):
+        chunks.append({
+            "id": results["ids"][0][i],
+            "document": results["documents"][0][i],
+            "metadata": results["metadatas"][0][i],
+        })
+    return chunks
 
 
 def get_document_by_id(doc_id: str) -> Optional[Dict[str, Any]]:
@@ -90,7 +104,7 @@ def add_full_document(
         doc_id: str,
         content: str,
         metadata: Optional[Dict[str, Any]] = None,
-        model_name: str = "gpt-4"
+        model_name: str = "gpt-4o-mini"
 ):
     collection = get_or_create_collection()
     processed_chunks = preprocess_document_by_tokens(content, model_name=model_name)
