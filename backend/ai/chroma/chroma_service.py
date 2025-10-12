@@ -8,7 +8,7 @@ from sentence_transformers import SentenceTransformer
 from backend.ai.chroma.token_chunker import preprocess_document_by_tokens
 
 CHROMA_HOST = os.getenv("CHROMA_HOST", "localhost")
-CHROMA_PORT = int(os.getenv("CHROMA_PORT", 8000))
+CHROMA_PORT = int(os.getenv("CHROMA_PORT", 8001))
 CHROMA_COLLECTION = os.getenv("CHROMA_COLLECTION", "documents")
 
 client = chromadb.HttpClient(

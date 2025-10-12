@@ -5,7 +5,6 @@ from pydantic import BaseModel
 
 class ChatRequest(BaseModel):
     document_id: int
-    user_id: int
     model: str
     message: str
 

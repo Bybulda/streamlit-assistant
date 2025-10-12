@@ -94,7 +94,7 @@ selected_doc_id = selected_doc["id"]
 
 
 st.subheader("⚙️ Модель")
-model_names = ["GPT-5", "DeepSeek"]
+model_names = ["gpt-4o-mini", "mistralai/mistral-nemo:free"]
 if "selected_model" not in st.session_state:
     st.session_state.selected_model = model_names[0]
 
@@ -173,20 +173,23 @@ selected_prompt = st.selectbox(
 )
 
 if selected_prompt != "Быстрый запрос" and st.session_state.get(handled_key) != selected_prompt:
-    prompt_data = prompt_options[selected_prompt].copy()
-    prompt_data["model"] = st.session_state.selected_model
+    prompt = {
+        "document_id": selected_doc_id,
+        "message": selected_prompt,
+        "model": st.session_state.selected_model
+    }
 
     st.session_state.chat_history[selected_doc_id].append({"role": "user", "text": selected_prompt})
 
     with st.spinner(f"Отвечает {st.session_state.selected_model}... ⏳"):
         res = requests.post(
-            f"{API_URL}/documents/{selected_doc_id}/analyze",
+            f"{API_URL}/chat/chat/request",
             headers=headers,
-            json=prompt_data,
-            timeout=60
+            json=prompt,
+            timeout=300
         )
         if res.status_code == 200:
-            result = res.json().get("result", "")
+            result = res.json().get("message", "")
             st.session_state.chat_history[selected_doc_id].append({"role": "assistant", "text": result})
         else:
             st.session_state.chat_history[selected_doc_id].append({
@@ -204,17 +207,20 @@ user_input = st.chat_input("Введите сообщение...")
 
 if user_input:
     st.session_state.chat_history[selected_doc_id].append({"role": "user", "text": user_input})
-
-    payload = {"type": "question", "question": user_input, "model": st.session_state.selected_model}
+    prompt = {
+        "document_id": selected_doc_id,
+        "message": user_input,
+        "model": st.session_state.selected_model
+    }
 
     with st.spinner(f"Отвечает {st.session_state.selected_model}... ⏳"):
         res = requests.post(
-            f"{API_URL}/documents/{selected_doc_id}/analyze",
+            f"{API_URL}/chat/chat/request",
             headers=headers,
-            json=payload
+            json=prompt
         )
         if res.status_code == 200:
-            result = res.json()["result"]
+            result = res.json()["message"]
             st.session_state.chat_history[selected_doc_id].append({"role": "assistant", "text": result})
         else:
             st.session_state.chat_history[selected_doc_id].append({

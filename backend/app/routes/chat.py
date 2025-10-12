@@ -24,6 +24,9 @@ async def chat(req: ChatRequest, username: str = Depends(verify_token)):
 @router.get("/chat/history", response_model=ChatHistoryResponse)
 async def get_chat_history(document_id: int, username: str = Depends(verify_token), db: Session = Depends(get_db)):
     messages_history = chat_repository.get_messages_by_document(db, document_id)
+    user = db.query(model.User).filter(model.User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return {"history": messages_history}
 
 
@@ -54,4 +57,6 @@ async def get_chat_request(request: ChatRequest, username: str = Depends(verify_
     chunks = search_similar_chunks(request.message, 5, str(request.document_id))
     llm_model = get_llm_client(request.model, request, chunks)
     response = llm_model.send()
-    return {"message": response}
+    chat_repository.add_message(db, request.document_id, "assistant", response)
+
+    return {"message": response, "role": "assistant"}

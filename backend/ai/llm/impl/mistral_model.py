@@ -24,7 +24,7 @@ class MistralClient(BaseLLM):
     def send(self) -> str:
         messages = self.build_prompt()
         headers = {"Authorization": f"Bearer {self.MISTRAL_API_KEY}"}
-        data = {"model": "mistral-small", "messages": messages}
+        data = {"model": "mistralai/mistral-nemo:free", "messages": messages}
 
         resp = requests.post(self.CLIENT_URL, headers=headers, json=data)
         resp.raise_for_status()
