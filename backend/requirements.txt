@@ -9,3 +9,11 @@ psycopg2-binary
 passlib[bcrypt]
 bcrypt==3.2.2
 pytest
+openai
+python-dotenv
+chromadb
+sentence-transformers
+unstructured
+pypdf
+python-docx
+tiktoken

@@ -1,8 +1,0 @@
-openai
-python-dotenv
-chromadb
-sentence-transformers
-unstructured
-pypdf
-python-docx
-tiktoken
