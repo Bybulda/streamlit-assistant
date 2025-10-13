@@ -26,7 +26,6 @@ streamlit_assistant/
 │   │   │   ├── user_repository.py
 │   │   │   ├── document_repository.py
 │   │   │   └── chat_repository.py
-│   │   └── db/                     # SQLAlchemy/Alembic config (если есть)
 │   └── ai/
 │       ├── chroma/
 │       │   └── chroma_service.py
