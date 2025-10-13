@@ -1,6 +1,6 @@
 # Streamlit Assistant
 
-Небольшой проект — веб-приложение для загрузки документов, поиска по ним с помощью ChromaDB и получения ответов от LLM (OpenAI / OpenRouter). Состоит из backend (FastAPI) и frontend (Streamlit).
+Веб-приложение для загрузки документов, поиска по ним с помощью ChromaDB и получения ответов от LLM (OpenAI / OpenRouter). Состоит из backend (FastAPI) и frontend (Streamlit).
 
 ---
 
