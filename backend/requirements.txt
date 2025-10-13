@@ -1,0 +1,19 @@
+fastapi
+uvicorn[standard]
+pydantic
+python-multipart  # для загрузки файлов
+python-jose[cryptography]
+sqlalchemy
+alembic
+psycopg2-binary
+passlib[bcrypt]
+bcrypt==3.2.2
+pytest
+openai
+python-dotenv
+chromadb
+sentence-transformers
+unstructured
+pypdf
+python-docx
+tiktoken
