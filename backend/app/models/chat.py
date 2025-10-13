@@ -15,7 +15,7 @@ class ChatResponse(BaseModel):
 class ChatHistoryItem(BaseModel):
     id: int
     document_id: int
-    user_id: int
+    user_id: Optional[int] = None
     role: str
     message: str
     model: Optional[str] = None

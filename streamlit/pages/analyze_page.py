@@ -67,6 +67,15 @@ st.markdown(
 )
 
 
+def load_chat_history(document_id: int, headers_: dict):
+    response_hist = requests.get(f"{API_URL}/chat/chat/history", params={"document_id": document_id}, headers=headers_)
+    if response_hist.status_code == 200:
+        data = response_hist.json()
+        return data.get("history", [])
+    else:
+        st.error(f"Ошибка при загрузке истории: {response_hist.text}")
+        return []
+
 
 if "access_token" not in st.session_state or not st.session_state.access_token:
     st.warning("Пожалуйста, войдите в систему через главную страницу.")
@@ -109,29 +118,17 @@ selected_model = st.radio(
 st.session_state.selected_model = selected_model
 
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = {}
-
-if selected_doc_id not in st.session_state.chat_history:
-    st.session_state.chat_history[selected_doc_id] = []
 
 
-converted = []
-for m in st.session_state.chat_history[selected_doc_id]:
-    if isinstance(m, tuple) and len(m) == 2:
-        role, text = m
-        converted.append({"role": role, "text": text})
-    elif isinstance(m, dict):
-        converted.append(m)
-st.session_state.chat_history[selected_doc_id] = converted
-
+chat_history = load_chat_history(selected_doc_id, headers)
 
 chat_html = '<div class="chat-container" id="chat-box">'
-for msg in st.session_state.chat_history[selected_doc_id]:
+for msg in chat_history:
     role = msg.get("role", "assistant")
-    text = msg.get("text", "")
+    text = msg.get("message", "")
     chat_html += f'<div class="msg-row {role}"><div class="bubble {role}-bubble">{text}</div></div>'
 chat_html += '</div>'
+
 st.markdown(chat_html, unsafe_allow_html=True)
 
 st.markdown(
@@ -179,8 +176,6 @@ if selected_prompt != "Быстрый запрос" and st.session_state.get(han
         "model": st.session_state.selected_model
     }
 
-    st.session_state.chat_history[selected_doc_id].append({"role": "user", "text": selected_prompt})
-
     with st.spinner(f"Отвечает {st.session_state.selected_model}... ⏳"):
         res = requests.post(
             f"{API_URL}/chat/chat/request",
@@ -188,14 +183,6 @@ if selected_prompt != "Быстрый запрос" and st.session_state.get(han
             json=prompt,
             timeout=300
         )
-        if res.status_code == 200:
-            result = res.json().get("message", "")
-            st.session_state.chat_history[selected_doc_id].append({"role": "assistant", "text": result})
-        else:
-            st.session_state.chat_history[selected_doc_id].append({
-                "role": "assistant",
-                "text": f"Ошибка: {res.status_code} {res.text}"
-            })
 
     st.session_state[handled_key] = selected_prompt
 
@@ -206,7 +193,6 @@ if selected_prompt != "Быстрый запрос" and st.session_state.get(han
 user_input = st.chat_input("Введите сообщение...")
 
 if user_input:
-    st.session_state.chat_history[selected_doc_id].append({"role": "user", "text": user_input})
     prompt = {
         "document_id": selected_doc_id,
         "message": user_input,
@@ -219,12 +205,4 @@ if user_input:
             headers=headers,
             json=prompt
         )
-        if res.status_code == 200:
-            result = res.json()["message"]
-            st.session_state.chat_history[selected_doc_id].append({"role": "assistant", "text": result})
-        else:
-            st.session_state.chat_history[selected_doc_id].append({
-                "role": "assistant",
-                "text": f"Ошибка: {res.status_code} {res.text}"
-            })
     st.rerun()
