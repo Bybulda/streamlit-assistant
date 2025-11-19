@@ -1,6 +1,6 @@
 import os
 
-import requests
+import httpx
 from dotenv import load_dotenv
 
 from backend.ai.llm.base_model import BaseLLM
@@ -21,12 +21,14 @@ class MistralClient(BaseLLM):
             {"role": "user", "content": self.request.message}
         ]
 
-    def send(self) -> str:
+    async def send(self) -> str:
         messages = self.build_prompt()
         headers = {"Authorization": f"Bearer {self.MISTRAL_API_KEY}"}
         data = {"model": "mistralai/mistral-nemo:free", "messages": messages}
 
-        resp = requests.post(self.CLIENT_URL, headers=headers, json=data)
-        resp.raise_for_status()
-        result = resp.json()
-        return result["choices"][0]["message"]["content"].strip()
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(self.CLIENT_URL, headers=headers, json=data)
+            resp.raise_for_status()
+            result = resp.json()
+            return result["choices"][0]["message"]["content"].strip()
+

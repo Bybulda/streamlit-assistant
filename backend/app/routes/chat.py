@@ -44,19 +44,18 @@ async def get_chat_request(request: ChatRequest, username: str = Depends(verify_
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     if not chroma_service.document_exists(str(request.document_id)):
-        if not chroma_service.document_exists(str(request.document_id)):
-            file_suffix = pathlib.Path(document.filename).suffix
-            document_content = file_loader.extract_text_from_bytes(document.content, file_suffix)
-            metadata = {
+        file_suffix = pathlib.Path(document.filename).suffix
+        document_content = file_loader.extract_text_from_bytes(document.content, file_suffix)
+        metadata = {
                 "document_id": str(request.document_id),
                 "filename": document.filename,
                 "file_type": file_suffix
-            }
-            chroma_service.add_full_document(str(request.document_id), document_content, metadata, request.model)
+        }
+        chroma_service.add_full_document(str(request.document_id), document_content, metadata, request.model)
         chat_repository.add_message(db, request.document_id, "user", request.message)
     chunks = search_similar_chunks(request.message, 5, str(request.document_id))
     llm_model = get_llm_client(request.model, request, chunks)
-    response = llm_model.send()
+    response = await llm_model.send()
     chat_repository.add_message(db, request.document_id, "assistant", response)
 
     return {"message": response, "role": "assistant"}
