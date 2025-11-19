@@ -12,5 +12,5 @@ class BaseLLM(ABC):
         pass
 
     @abstractmethod
-    def send(self) -> str:
+    async def send(self) -> str:
         pass
